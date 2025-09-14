@@ -1,0 +1,138 @@
+<% layout("/layouts/boilerplate")%>
+
+<div id="filters" class="mt-3">
+  <div class="filter">
+    <a href="/listings?category=trending">
+      <div><i class="fa-solid fa-fire fa-2x"></i></div>
+      <p>Trending</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=luxury">
+      <div><i class="fa-brands fa-bluesky fa-2x"></i></div>
+      <p>Luxury</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=tiny rooms">
+      <div><i class="fa-solid fa-house-chimney fa-2x"></i></div>
+      <p>Tiny Rooms</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=amazing views">
+      <div><i class="fa-regular fa-images fa-2x"></i></div>
+      <p>Amazing Views</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=iconic cities">
+      <div><i class="fa-solid fa-building-wheat fa-2x"></i></div>
+      <p>Iconic Cities</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=mountains">
+      <div><i class="fa-solid fa-mountain-city fa-2x"></i></div>
+      <p>Mountains</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=omg">
+      <div><i class="fa-brands fa-octopus-deploy fa-2x"></i></div>
+      <p>OMG</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=beach">
+      <div><i class="fa-solid fa-umbrella-beach fa-2x"></i></div>
+      <p>Beach</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=amazing pools">
+      <div><i class="fa-solid fa-person-swimming fa-2x"></i></div>
+      <p>Amazing Pools</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=castles">
+      <div><i class="fa-brands fa-fort-awesome fa-2x"></i></div>
+      <p>Castles</p>
+    </a>
+  </div>
+  <div class="filter">
+    <a href="/listings?category=snow">
+      <div><i class="fa-solid fa-snowman fa-2x"></i></div>
+      <p>Snow</p>
+    </a>
+  </div>
+
+  <!-- Tax Toggle -->
+  <div class="tax-toggle d-flex align-items-center ms-3">
+    <div class="form-check-reverse form-switch">
+      <input
+        type="checkbox"
+        class="form-check-input"
+        role="switch"
+        id="flexSwitchCheckDefault"
+      />
+      <label for="flexSwitchCheckDefault" class="form-check-label">
+        Display total before taxes
+      </label>
+    </div>
+  </div>
+</div>
+
+<div class="container my-4">
+  <h2 class="mb-3">
+    <% if(filter === "All"){ %> All Listings <% } else { %> Showing <%=
+    filter.charAt(0).toUpperCase() + filter.slice(1) %> Listings <% } %>
+  </h2>
+
+  <!-- Listings -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mt-2">
+    <% if (allListings.length === 0) { %>
+    <p style="font-size: 2rem; width: auto">
+      Opps! No listings found in this category !
+    </p>
+    <% } else { %> <% for (let listing of allListings) { %>
+    <div class="col">
+      <div class="card listing-card h-100" style="width: 100%">
+        <a
+          href="/listings/<%= listing._id %>"
+          class="text-decoration-none text-dark"
+        >
+          <img
+            src="<%= listing.image.url %>"
+            class="card-img-top"
+            alt="listing-image"
+            style="height: 19rem; object-fit: cover"
+          />
+          <div class="card-body">
+            <h6 class="card-title"><%= listing.title %></h6>
+            <p class="card-text">
+              ₹<%= listing.price.toLocaleString("en-IN") %> / night
+              <i class="tax-info">+ 18% tax</i>
+            </p>
+          </div>
+        </a>
+      </div>
+    </div>
+    <% } %> <% } %>
+  </div>
+</div>
+
+<script>
+  let texSwitch = document.querySelector("#flexSwitchCheckDefault");
+  let taxInfo = document.querySelectorAll(".tax-info");
+  texSwitch.addEventListener("click", () => {
+    for (info of taxInfo) {
+      if (info.style.display != "inline") {
+        info.style.display = "inline";
+      } else {
+        info.style.display = "none";
+      }
+    }
+  });
+</script>

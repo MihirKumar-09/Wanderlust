@@ -1,0 +1,89 @@
+<!-- Create Listings -->
+<%if(successMsg && successMsg.length >0){%>
+<div
+  class="alert alert-success col-4 offset-3 mt-3 alert-dismissible fade show"
+  role="alert"
+>
+  <%= successMsg %>
+  <button
+    class="btn-close ms-5"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
+</div>
+<%}%>
+
+<!-- Edit Listings -->
+<%if(editMsg && editMsg.length >0){%>
+<div
+  class="alert alert-success col-4 offset-3 mt-3 alert-dismissible fade show"
+  role="alert"
+>
+  <%= editMsg %>
+  <button
+    class="btn-close ms-5"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
+</div>
+<%}%>
+
+<!-- Delete Listings -->
+<%if(deleteMsg && deleteMsg.length >0){%>
+<div
+  class="alert alert-danger col-4 offset-3 mt-3 alert-dismissible fade show"
+  role="alert"
+>
+  <%= deleteMsg %>
+  <button
+    class="btn-close ms-5"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
+</div>
+<%}%>
+
+<!-- Add new review -->
+<%if(newReview && newReview.length >0){%>
+<div
+  class="alert alert-success col-4 offset-3 mt-3 alert-dismissible fade show"
+  role="alert"
+>
+  <%= newReview %>
+  <button
+    class="btn-close ms-5"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
+</div>
+<%}%>
+
+<!-- Delete Review -->
+<%if(deleteReview && deleteReview.length >0){%>
+<div
+  class="alert alert-danger col-4 offset-3 mt-3 alert-dismissible fade show"
+  role="alert"
+>
+  <%= deleteReview %>
+  <button
+    class="btn-close ms-5"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
+</div>
+<%}%>
+
+<!-- Error -->
+<%if(showError && showError.length >0){%>
+<div
+  class="alert alert-danger col-4 offset-3 mt-3 alert-dismissible fade show"
+  role="alert"
+>
+  <%= showError %>
+  <button
+    class="btn-close ms-5"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
+</div>
+<%}%>
