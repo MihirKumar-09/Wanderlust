@@ -22,4 +22,4 @@ Backend: Node.js, Express.js
 
 Database: MongoDB
 
-Authentication: JWT / User login system
+Authentication: passport / User login system
