@@ -1,62 +1,54 @@
-//!-------ENV FILE SET-UP------
-if (process.env.NODE_ENV != "production") {
+//! ------- ENV FILE SET-UP -------
+if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
-//! Express set-up;
+
 const express = require("express");
 const app = express();
 const path = require("path");
-//Handle HTTP request;
-app.use(express.urlencoded({ extended: true }));
-//Server static files;
-app.use(express.static(path.join(__dirname, "public")));
-//Set view engine;
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-//Method Override;
 const methodOverride = require("method-override");
-app.use(methodOverride("_method"));
-// Access review schema and models ;
-const Review = require("./models/review.js");
-//ejs-mate : which is a npm package and act as a ejs layout engine ;
-const ejsMate = require("ejs-mate");
-app.engine("ejs", ejsMate);
-// Require our ExpressError handling class;
-const ExpressError = require("./utils/ExpressError.js");
-//!------REQUIRE THE LISTING ROUTER-------
-const listingRouter = require("./routes/listings.js");
-//!------REQUIRE THE REVIEWS ROUTER-------
-const reviewRouter = require("./routes/reviews.js");
-//!------REQUIRE THE USER ROUTER-------
-const userRouter = require("./routes/user.js");
-//!-------USE EXPRESS SESSION------
+const mongoose = require("mongoose");
 const session = require("express-session");
-//!-------USE MONGO SESSION TO STORE USER INFO---------
 const MongoStore = require("connect-mongo");
-//!------REQUIRE FLASH----------
 const flash = require("connect-flash");
-//!------REQUIRE PASSPORT-------
 const passport = require("passport");
-//!-----REQUIRE PASSPORT LOCAL-STRATEGY-------
 const LocalStrategy = require("passport-local");
-//!-----REQUIRE USER MODEL TO USE USER AUTHENTICATION------
+const ejsMate = require("ejs-mate");
+
+//! ------- MODELS -------
 const User = require("./models/user.js");
 
-//! DB_URL;
+//! ------- ROUTERS -------
+const listingRouter = require("./routes/listings.js");
+const reviewRouter = require("./routes/reviews.js");
+const userRouter = require("./routes/user.js");
+
+//! ------- UTILS -------
+const ExpressError = require("./utils/ExpressError.js");
+
+//! ------- DATABASE CONNECTION -------
 const dbUrl = process.env.ATLASDB_URL;
-//! MongoDB set-up;
-const mongoose = require("mongoose");
-main()
-  .then(() => {
-    console.log("Connect DB");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+
 async function main() {
-  await mongoose.connect(dbUrl);
+  try {
+    await mongoose.connect(dbUrl);
+    console.log("Connected to MongoDB");
+  } catch (err) {
+    console.error("Database connection failed:", err);
+  }
 }
-//!------CREATE MONGO SESSTION OPTION -------
+main();
+
+//! ------- EXPRESS SETUP -------
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.engine("ejs", ejsMate);
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
+app.use(methodOverride("_method"));
+
+//! ------- SESSION STORE -------
 const store = MongoStore.create({
   mongoUrl: dbUrl,
   crypto: {
@@ -64,12 +56,17 @@ const store = MongoStore.create({
   },
   touchAfter: 24 * 3600,
 });
-//!------CREATE SESSION OPTIONS------
+
+store.on("error", function (err) {
+  console.log("Session Store Error", err);
+});
+
+//! ------- SESSION CONFIG -------
 const sessionOption = {
   store,
   secret: process.env.SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
     expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
     maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -77,55 +74,51 @@ const sessionOption = {
   },
 };
 
-//!-------DEFINE SESSION------
 app.use(session(sessionOption));
-//!--------DEFINE CONNECT-FLASH FOR MSG-------
 app.use(flash());
-//!--------INITIALIZE PASSPORT--------
+
+//! ------- PASSPORT SETUP -------
 app.use(passport.initialize());
-//!-------BUILD THE PASSPORT SESSION--------
 app.use(passport.session());
-//!------USE THE LOCAL STRATEGY-------
+
 passport.use(new LocalStrategy(User.authenticate()));
-//!------SERIALIZE THE PASSPORT-------
 passport.serializeUser(User.serializeUser());
-//!------DE-SERIALIZE THE PASSPORT-------
 passport.deserializeUser(User.deserializeUser());
 
-//!------MIDDLEWARE FOR FLASH MSG-----------;
+//! ------- GLOBAL LOCALS MIDDLEWARE -------
 app.use((req, res, next) => {
-  //for listings;
   res.locals.successMsg = req.flash("success");
   res.locals.editMsg = req.flash("edit");
   res.locals.deleteMsg = req.flash("delete");
-  //for reviews;
   res.locals.newReview = req.flash("newReview");
   res.locals.deleteReview = req.flash("deleteReview");
-  // For errors;
   res.locals.showError = req.flash("error");
-  res.locals.currentUser = req.user;
+
+  // Prevent production crash
+  res.locals.currentUser = req.user || null;
+
   next();
 });
 
-//!------------ NOW USE THE LISTINGS ROUTES---------
+//! ------- ROUTES -------
 app.use("/listings", listingRouter);
-//!------------ NOW USE THE LISTINGS ROUTES---------
 app.use("/listings/:id/reviews", reviewRouter);
-//!------------ NOW USE THE USER ROUTES---------
 app.use("/", userRouter);
 
-//! Error Handling Middleware
-//! If user send request on wrong route
-app.all(/.*/, (req, res, next) => {
+//! ------- 404 HANDLER -------
+app.all("*", (req, res, next) => {
   next(new ExpressError(404, "Page not found!"));
 });
-//! Error handling middleware;
+
+//! ------- ERROR HANDLER -------
 app.use((err, req, res, next) => {
-  const { statusCode = 500, message = "Something went wrong" } = err;
-  // res.status(statusCode).send(message);
+  const { statusCode = 500 } = err;
   res.status(statusCode).render("listings/error.ejs", { err });
 });
 
-app.listen(8080, () => {
-  console.log("Server is running on port 8080");
+//! ------- SERVER START -------
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
